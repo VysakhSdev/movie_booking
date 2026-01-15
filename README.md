@@ -37,6 +37,15 @@ Confirmation Step: Transfers the hold from Redis to a permanent record in MongoD
 - **Primary Database:** MongoDB (Persistent Bookings)
 - **Cache/Locking:** Redis (Temporary Holds)
 
+## API GuideBase
+Sample Show ID: 6968c63750fc5afb14f89c46 or call Seeder  and check your console after seeding
+
+Method  Endpoint         Description
+GET,    /status/:showId,  View live seat map (Available/Held/Booked)
+GET,    /summary/:showId, Get counts of seats by status
+POST,   /hold,            Place 10-minute hold
+POST,   /confirm,         Finalize booking into MongoDBB
+
 
 
 

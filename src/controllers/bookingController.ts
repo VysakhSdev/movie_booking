@@ -19,13 +19,11 @@ export const getSeatMap = async (req: Request, res: Response) => {
     const bookedDocs = await Booking.find({ showId }).select("seatNumber");
     const bookedSeatNumbers = new Set(bookedDocs.map((b) => b.seatNumber));
 
-    const allKeys = await redisClient.keys('*');
-console.log("All keys in Redis:", allKeys);
+    const allKeys = await redisClient.keys("*");
+    console.log("All keys in Redis:", allKeys);
 
     const holdKeys = await redisClient.keys(`hold:${showId}:*`);
 
-
-    console.log(holdKeys,"21312");
     const heldSeatNumbers = new Set(
       holdKeys.map((key) => key.split(":").pop())
     );
@@ -65,11 +63,9 @@ export const holdSeat = async (req: Request, res: Response) => {
   const { showId, seatNumber, userId } = req.body;
 
   if (!showId || !seatNumber || !userId) {
-    return res
-      .status(400)
-      .json({
-        message: "Unable to proceed. Missing show, seat, or user information.",
-      });
+    return res.status(400).json({
+      message: "Unable to proceed. Missing show, seat, or user information.",
+    });
   }
 
   try {
@@ -113,12 +109,10 @@ export const holdSeat = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Hold Seat Error:", error);
-    res
-      .status(500)
-      .json({
-        message:
-          "We encountered an error while holding your seats. Please try again.",
-      });
+    res.status(500).json({
+      message:
+        "We encountered an error while holding your seats. Please try again.",
+    });
   }
 };
 
@@ -137,29 +131,22 @@ export const confirmBooking = async (req: Request, res: Response) => {
     if (alreadyBooked.length > 0) {
       const isSameUser = alreadyBooked.every((b) => b.userId === userId);
       if (isSameUser && alreadyBooked.length === seatNumbers.length) {
-        return res
-          .status(200)
-          .json({
-            message: "Your booking is already confirmed. Enjoy your movie!",
-          });
-      }
-      return res
-        .status(400)
-        .json({
-          message:
-            " Selected seats have already been purchased by someone else.",
+        return res.status(200).json({
+          message: "Your booking is already confirmed. Enjoy your movie!",
         });
+      }
+      return res.status(400).json({
+        message: " Selected seats have already been purchased by someone else.",
+      });
     }
 
     for (const seat of seatNumbers) {
       const heldBy = await redisClient.get(`hold:${showId}:${seat}`);
 
       if (!heldBy) {
-        return res
-          .status(410)
-          .json({
-            message: `Your session for seat ${seat} has expired. Please select your seats again.`,
-          });
+        return res.status(410).json({
+          message: `Your session for seat ${seat} has expired. Please select your seats again.`,
+        });
       }
       if (heldBy !== userId) {
         return res
@@ -185,12 +172,10 @@ export const confirmBooking = async (req: Request, res: Response) => {
       .json({ message: "Booking confirmed! Your tickets are ready." });
   } catch (error: any) {
     if (error.code === 11000) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "Payment failed: This seat was just purchased by another customer.",
-        });
+      return res.status(400).json({
+        message:
+          "Payment failed: This seat was just purchased by another customer.",
+      });
     }
     console.error("Confirm Booking Error:", error);
     res.status(500).json({ message: "Internal Server Error." });
